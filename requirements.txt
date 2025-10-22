@@ -1,0 +1,6 @@
+# pyahocorasick
+fastapi
+sqlalchemy
+pydantic
+uvicorn
+python-multipart

@@ -1,0 +1,46 @@
+{
+    "global": [
+        "service timestamps debug datetime localtime",
+        "service timestamps log datetime localtime",
+        "service password-encryption",
+        "boot system flash sup-bootflash:c7600rsp72043-adventerprisek9-mz.122-33.SRE5",
+        "clock timezone PRC 8",
+        "ip subnet-zero",
+        "no ip source-route",
+        "no ip domain-lookup",
+        "no ip bootp server",
+        "ip multicast-routing",
+        "redundancy",
+        "mode rpr-plus",
+        "main-cpu",
+        "auto-sync running-config",
+        "auto-sync standard",
+        "ip classless",
+        "no ip http server",
+        "line con 0",
+        "line vty 0 4"
+    ],
+    "version": "12.2",
+    "hostname": "S2-7609",
+    "vrf": [
+        "ip vrf VPN-WG\nrd 2516:110100000\nroute-target export 2516:110100000\nroute-target import 2516:110100000",
+        "address-family vpnv4\nneighbor 222.7.0.1 activate\nneighbor 222.7.0.1 next-hop-self\nneighbor 222.7.0.1 send-community both\nneighbor 222.7.0.2 activate\nneighbor 222.7.0.2 next-hop-self\nneighbor 222.7.0.2 send-community both\nno auto-summary\nexit-address-family",
+        "address-family ipv4 vrf VPN-WG\nredistribute connected\nno auto-summary\nno synchronization\nexit-address-family"
+    ],
+    "mpls": [
+        "mpls label protocol ldp",
+        "mpls ldp logging neighbor-changes\nmls flow ip destination\nmls flow ipx destination"
+    ],
+    "interfaces": [
+        "interface Loopback0\nip address 222.7.0.4 255.255.255.255\nno ip redirects\nno ip unreachables",
+        "interface TenGigabitEthernet3/1\ndescription TO-C1-GSR12016\nip address 222.7.0.146 255.255.255.252\nno ip redirects\nno ip unreachables\nip pim sparse-mode\nno negotiation auto\ntag-switching mtu 1508\ntag-switching ip\nmls qos trust dscp",
+        "interface TenGigabitEthernet3/2\ndescription TO-C2-GSR12016\nip address 222.7.0.178 255.255.255.252\nno ip redirects\nno ip unreachables\nip pim sparse-mode\nno negotiation auto\ntag-switching mtu 1508\ntag-switching ip\nmls qos trust dscp"
+    ],
+    "router_ospf": [
+        "router ospf 100\nrouter-id 222.7.0.4\nlog-adjacency-changes\nauto-cost reference-bandwidth 100000\nredistribute connected metric 0 metric-type 1 subnets\nredistribute static metric 1 metric-type 1 subnets\nnetwork 222.7.0.4 0.0.0.0 area 0\nnetwork 222.7.0.146 0.0.0.0 area 0\nnetwork 222.7.0.178 0.0.0.0 area 0"
+    ],
+    "router_bgp": [
+        "router bgp 2516\nno synchronization\nbgp router-id 222.7.0.4\nno bgp default ipv4-unicast\nbgp log-neighbor-changes\nneighbor 222.7.0.1 remote-as 2516\nneighbor 222.7.0.1 update-source Loopback0\nneighbor 222.7.0.2 remote-as 2516\nneighbor 222.7.0.2 update-source Loopback0\nno auto-summary"
+    ],
+    "vendor": "cisco"
+}

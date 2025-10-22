@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置文件预处理系统</title>
+    <script src="/static/js/tailwindcss3.4.17.js"></script>
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold">配置文件预处理系统</h1>
+            <p class="mt-2 text-blue-100">上传、清洗和管理你的配置文件</p>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="px-3 py-2 rounded-md text-sm font-medium text-blue-600 border-b-2 border-blue-600">上传文件</a>
+                    <a href="/file-manager" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:border-b-2 hover:border-blue-600 transition duration-200">文件管理</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">上传配置文件</h2>
+
+            <form id="uploadForm" class="space-y-4">
+                <div>
+                    <label for="fileDescription" class="block text-sm font-medium text-gray-700">批次描述（可选）</label>
+                    <input type="text" id="fileDescription" name="description"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="fileUpload" class="block text-sm font-medium text-gray-700">选择文件</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <i class="fa fa-cloud-upload text-3xl text-gray-400"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="fileUpload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                    <span>上传文件</span>
+                                    <input id="fileUpload" name="files" type="file" multiple class="sr-only">
+                                </label>
+                                <p class="pl-1">或拖放文件到此处</p>
+                            </div>
+                            <p class="text-xs text-gray-500">支持上传多个配置文件</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" id="uploadButton"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fa fa-upload mr-2"></i> 上传并处理
+                    </button>
+                </div>
+            </form>
+
+            <div id="uploadProgress" class="mt-6 hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">处理中...</span>
+                    <span id="progressPercent" class="text-sm font-medium text-gray-700">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="uploadSuccess" class="mt-6 hidden p-4 bg-green-100 border border-green-400 rounded-md text-green-700">
+                <i class="fa fa-check-circle mr-2"></i>
+                <span>文件上传和处理成功！</span>
+                <a href="/file-manager" class="text-blue-600 hover:underline ml-2">查看文件</a>
+            </div>
+
+            <div id="uploadError" class="mt-6 hidden p-4 bg-red-100 border border-red-400 rounded-md text-red-700">
+                <i class="fa fa-exclamation-circle mr-2"></i>
+                <span id="errorMessage">上传失败，请重试</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <p class="text-center text-gray-400">配置文件预处理系统 &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script src="js/upload.js"></script>
+</body>
+</html>

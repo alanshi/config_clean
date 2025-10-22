@@ -1,0 +1,54 @@
+[2024-09-09:12:23:43AM]! Command: show running-config
+[2024-09-09:12:23:43AM]! device: Arista-1 (vEOS, EOS-4.14.5F)
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]! boot system flash:/vEOS.swi
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]hostname Arista-1
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]spanning-tree mode mstp
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]no aaa root
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]interface Ethernet1
+[2024-09-09:12:23:43AM]   no switchport
+[2024-09-09:12:23:43AM]   ip address 10.0.0.1/30
+[2024-09-09:12:23:43AM]   ip ospf network point-to-point
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]interface Ethernet2
+[2024-09-09:12:23:43AM]   no switchport
+[2024-09-09:12:23:43AM]   ip address 10.0.0.5/30
+[2024-09-09:12:23:43AM]   ip ospf network point-to-point
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]interface Ethernet3
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]interface Loopback0
+[2024-09-09:12:23:43AM]   ip address 1.1.1.1/32
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]interface Management1
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]ip routing
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]router bgp 65001
+[2024-09-09:12:23:43AM]   router-id 1.1.1.1
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.2 remote-as 65001
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.2 update-source Loopback0
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.2 maximum-routes 12000
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.3 remote-as 65001
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.3 update-source Loopback0
+[2024-09-09:12:23:43AM]   neighbor 1.1.1.3 maximum-routes 12000
+[2024-09-09:12:23:43AM]   redistribute connected
+[2024-09-09:12:23:43AM]   redistribute static
+[2024-09-09:12:23:43AM]   address-family ipv4
+[2024-09-09:12:23:43AM]      neighbor 1.1.1.2 activate
+[2024-09-09:12:23:43AM]      neighbor 1.1.1.3 activate
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]router ospf 100
+[2024-09-09:12:23:43AM]   router-id 1.1.1.1
+[2024-09-09:12:23:43AM]   area 0.0.0.0 default-cost 1
+[2024-09-09:12:23:43AM]   network 1.1.1.1/32 area 0.0.0.0
+[2024-09-09:12:23:43AM]   network 10.0.0.0/30 area 0.0.0.0
+[2024-09-09:12:23:43AM]   network 10.0.0.4/30 area 0.0.0.0
+[2024-09-09:12:23:43AM]   max-lsa 12000
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]!
+[2024-09-09:12:23:43AM]end

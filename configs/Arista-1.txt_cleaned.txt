@@ -1,0 +1,53 @@
+! Command: show running-config
+! device: Arista-1 (vEOS, EOS-4.14.5F)
+!
+! boot system flash:/vEOS.swi
+!
+hostname Arista-1
+!
+spanning-tree mode mstp
+!
+no aaa root
+!
+interface Ethernet1
+   no switchport
+   ip address 10.0.0.1/30
+   ip ospf network point-to-point
+!
+interface Ethernet2
+   no switchport
+   ip address 10.0.0.5/30
+   ip ospf network point-to-point
+!
+interface Ethernet3
+!
+interface Loopback0
+   ip address 1.1.1.1/32
+!
+interface Management1
+!
+ip routing
+!
+router bgp 65001
+   router-id 1.1.1.1
+   neighbor 1.1.1.2 remote-as 65001
+   neighbor 1.1.1.2 update-source Loopback0
+   neighbor 1.1.1.2 maximum-routes 12000
+   neighbor 1.1.1.3 remote-as 65001
+   neighbor 1.1.1.3 update-source Loopback0
+   neighbor 1.1.1.3 maximum-routes 12000
+   redistribute connected
+   redistribute static
+   address-family ipv4
+      neighbor 1.1.1.2 activate
+      neighbor 1.1.1.3 activate
+!
+router ospf 100
+   router-id 1.1.1.1
+   area 0.0.0.0 default-cost 1
+   network 1.1.1.1/32 area 0.0.0.0
+   network 10.0.0.0/30 area 0.0.0.0
+   network 10.0.0.4/30 area 0.0.0.0
+   max-lsa 12000
+!
+end

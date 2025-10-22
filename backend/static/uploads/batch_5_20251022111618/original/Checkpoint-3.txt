@@ -1,0 +1,66 @@
+set clienv debug 0
+set clienv echo-cmd off
+set clienv output pretty
+set clienv prompt "%M"
+set clienv rows 0
+set clienv syntax-check off
+set arp table cache-size 4096
+set arp table validity-timeout 60
+set arp announce 2
+set hostname Checkpoint-FW-3
+set ntp active off 
+set as 65001
+set router-id 1.1.1.3
+set max-path-splits 8
+set tracefile maxnum 10
+set tracefile size 1
+add allowed-client host any-host 
+set interface eth1 link-speed 1000M/full
+set interface eth1 state on
+set interface eth1 ipv4-address 10.0.0.6 mask-length 30
+set interface eth2 link-speed 1000M/full
+set interface eth2 state on
+set interface eth2 ipv4-address 10.0.0.10 mask-length 30
+set interface lo state on
+set interface lo ipv4-address 1.1.1.3 mask-length 32
+set bgp internal on
+set bgp internal protocol all on
+set bgp internal interface all on
+set bgp internal peer 10.0.0.5 on
+set bgp internal peer 10.0.0.5 local-address 10.0.0.6 on
+set bgp internal peer 10.0.0.9 on
+set bgp internal peer 10.0.0.9 local-address 10.0.0.10 on
+set ospf area backbone on
+set ospf interface eth1 area backbone on
+set ospf interface eth1 hello-interval 10
+set ospf interface eth1 dead-interval 40
+set ospf interface eth1 cost 1
+set ospf interface eth1 priority 1
+set ospf interface eth1 retransmit-interval 5
+set ospf interface eth2 area backbone on
+set ospf interface eth2 hello-interval 10
+set ospf interface eth2 dead-interval 40
+set ospf interface eth2 cost 1
+set ospf interface eth2 priority 1
+set ospf interface eth2 retransmit-interval 5
+set ospf area backbone range 10.0.0.4/30 restrict on
+set ospf area backbone range 10.0.0.8/30 restrict on
+set ospf area backbone range 1.1.1.3/32 restrict on
+add command tecli path /bin/tecli_start description "Threat Emulation Blade shell"  
+set web table-refresh-rate 15
+set web session-timeout 10
+set web ssl-port 443
+set web daemon-enable on
+set format date dd-mmm-yyyy
+set format time 24-hour
+set format netmask Dotted
+set ipv6 ospf3 area backbone on
+set rip update-interval default
+set rip expire-interval default
+set rip auto-summary on
+set aaa tacacs-servers state off 
+set aaa radius-servers super-user-uid 96 
+set user admin shell /etc/cli.sh 
+set user admin password-hash $1$gumqIdNz$ZyDUOomMNVtzVb5wu.igf. 
+set user monitor shell /etc/cli.sh 
+set user monitor password-hash * 
