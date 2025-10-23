@@ -112,6 +112,20 @@ def health_check():
     return {"status": "healthy"}
 
 
+
+
+@app.get("/keyword-manager", response_class=HTMLResponse)
+async def keyword_manager(request: Request):
+    # 直接返回keywords-manager.html内容
+    try:
+        with open(os.path.join(frontend_dir, "keyword-manager.html"), "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="keywords manager not found")
+
+
+
 @app.get("/file-manager", response_class=HTMLResponse)
 async def file_manager(request: Request):
     # 直接返回file-manager.html内容

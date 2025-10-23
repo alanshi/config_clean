@@ -20,7 +20,8 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
                     <a href="/" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:border-b-2 hover:border-blue-600 transition duration-200">上传文件</a>
-                    <a href="/file-manager.html" class="px-3 py-2 rounded-md text-sm font-medium text-blue-600 border-b-2 border-blue-600">文件管理</a>
+                    <a href="/file-manager" class="px-3 py-2 rounded-md text-sm font-medium text-blue-600 border-b-2 border-blue-600">文件管理</a>
+                    <a href="/keyword-manager" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:border-b-2 hover:border-blue-600 transition duration-200">关键词管理</a>
                 </div>
             </div>
         </div>
@@ -35,14 +36,18 @@
                 </button>
             </div>
 
-            <div id="loadingIndicator" class="flex justify-center py-12">
+            <!-- <div id="loadingIndicator" class="flex justify-center py-12">
                 <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div> -->
+            <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                <!-- 错误信息将通过JavaScript动态填充 -->
             </div>
-
             <div id="noBatches" class="hidden text-center py-12 text-gray-500">
                 <i class="fa fa-folder-open text-5xl mb-4"></i>
                 <p>暂无文件批次，请先上传文件</p>
             </div>
+
+
 
             <div id="batchesList" class="hidden space-y-6">
                 <!-- 批次列表将通过JavaScript动态生成 -->
@@ -72,10 +77,10 @@
 
     <footer class="bg-gray-800 text-white mt-12">
         <div class="container mx-auto px-4 py-6">
-            <p class="text-center text-gray-400">配置文件预处理系统 &copy; 2023</p>
+            <p class="text-center text-gray-400">配置文件预处理系统 &copy; 2025</p>
         </div>
     </footer>
 
-    <script src="js/file-manager.js"></script>
+    <script src="/static/js/file-manager.js"></script>
 </body>
 </html>

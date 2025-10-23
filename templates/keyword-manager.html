@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关键词管理 - 配置文件预处理系统</title>
+    <script src="/static/js/tailwindcss3.4.17.js"></script>
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 头部和导航同其他页面 -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold">配置文件预处理系统</h1>
+            <p class="mt-2 text-blue-100">上传、清洗和管理你的配置文件</p>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600">上传文件</a>
+                    <a href="/file-manager" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600">文件管理</a>
+                    <a href="/keyword-manager" class="px-3 py-2 rounded-md text-sm font-medium text-blue-600 border-b-2 border-blue-600">关键词管理</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">创建关键词组</h2>
+            <form id="keywordSetForm" class="space-y-4">
+                <div>
+                    <label for="setName" class="block text-sm font-medium text-gray-700">关键词组名称 <span class="text-red-500">*</span></label>
+                    <input type="text" id="setName" name="name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="setDescription" class="block text-sm font-medium text-gray-700">描述（可选）</label>
+                    <textarea id="setDescription" name="description" rows="2"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">关键词列表 <span class="text-red-500">*</span></label>
+                    <p class="text-xs text-gray-500 mb-2">每行输入一个关键词，支持多个关键词</p>
+                    <textarea id="keywords" name="keywords" rows="6" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="aaa&#10;access-list&#10;access-group&#10;..."></textarea>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fa fa-save mr-2"></i> 保存关键词组
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 关键词组详情模态框 -->
+<div id="keywordSetModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+        <!-- 模态框头部 -->
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 id="modalSetTitle" class="text-lg font-semibold text-gray-800">关键词组详情</h3>
+            <button id="closeSetModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- 模态框内容 -->
+        <div class="p-4 flex-grow overflow-auto">
+            <div class="mb-4">
+                <p class="text-sm text-gray-500">描述</p>
+                <p id="modalSetDescription" class="mt-1 text-gray-800"></p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">关键词列表 <span id="keywordCount" class="text-blue-600">(0个关键词)</span></p>
+                <div id="modalKeywordsList" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                    <!-- 关键词将通过JS动态填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框底部 -->
+        <div class="p-4 border-t flex justify-end">
+            <button id="closeSetModalBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                关闭
+            </button>
+        </div>
+    </div>
+</div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">已保存的关键词组</h2>
+
+            <div id="keywordSetsList" class="space-y-4">
+                <!-- 关键词组列表将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <p class="text-center text-gray-400">配置文件预处理系统 &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/keyword-manager.js"></script>
+</body>
+</html>

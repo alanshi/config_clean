@@ -1,0 +1,55 @@
+Value TYPE (interface|ospf|bgp)
+Value INTF (\S+)
+Value DESC (.+)
+Value IPADDR (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value MASK (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value STATE (shutdown|no shutdown)
+Value OSPF_ID (\d+)
+Value OSPF_ROUTER_ID (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value OSPF_NETWORK (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value OSPF_WILDCARD (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value OSPF_AREA (\d+)
+Value BGP_AS (\d+)
+Value ROUTER_ID (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value NEIGHBOR (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+Value REMOTE_AS (\d+)
+Value UPDATE_SOURCE (\S+)
+Value NO_SYNC (True|False)
+Value NO_AUTO_SUMMARY (True|False)
+Value NO_DEFAULT_UNICAST (True|False)
+Value BGP_AFI (\S+)
+
+
+Start
+  ^interface\s+${INTF} -> Interface
+  ^router\s+ospf\s+${OSPF_ID} -> Ospf
+  ^router\s+bgp\s+${BGP_AS} -> Bgp
+
+Interface
+  ^\s+description\s+${DESC}
+  ^\s+ip\s+address\s+${IPADDR}\s+${MASK}
+  ^\s+${STATE}
+  ^\s*$$ -> Record
+  ^interface\s+${INTF} -> Record
+  ^router\s+ospf\s+${OSPF_ID} -> Record
+  ^router\s+bgp\s+${BGP_AS} -> Record
+
+Ospf
+  ^\s*router-id\s+${OSPF_ROUTER_ID}
+  ^\s*network\s+${OSPF_NETWORK}\s+${OSPF_WILDCARD}\s+area\s+${OSPF_AREA} -> Record
+  ^! -> Start
+  ^\s*$$ -> Record
+  ^router\s+bgp\s+${BGP_AS} -> Record
+  ^interface\s+${INTF} -> Record
+
+Bgp
+  ^\s*bgp\s+router-id\s+(?P<ROUTER_ID>\d{1,3}(?:\.\d{1,3}){3}) -> Continue
+  ^\s*no\s+synchronization -> Continue
+  ^\s*no\s+bgp\s+default\s+ipv4-unicast -> Continue
+  ^\s*no\s+auto-summary -> Continue
+  ^\s*neighbor\s+(?P<NEIGHBOR>\d{1,3}(?:\.\d{1,3}){3})\s+remote-as\s+(?P<REMOTE_AS>\d+) -> Record
+  ^\s*neighbor\s+(?P<NEIGHBOR>\d{1,3}(?:\.\d{1,3}){3})\s+update-source\s+(?P<UPDATE_SOURCE>\S+) -> Record
+  ^! -> Start
+  ^\s*$$ -> Record
+  ^router\s+ -> Record
+  ^interface\s+ -> Record

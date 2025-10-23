@@ -48,3 +48,28 @@ class CleanedFile2(Base):
     batch_id = Column(Integer, ForeignKey("batches.id"))
 
     batch = relationship("Batch", back_populates="cleaned_files_2")
+
+# 在原有模型基础上添加
+class KeywordSet(Base):
+    __tablename__ = "keyword_sets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False)  # 关键词组名称
+    description = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    keywords = Column(String)  # 存储逗号分隔的关键词
+
+class KeywordMatchResult(Base):
+    __tablename__ = "keyword_match_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    batch_id = Column(Integer, ForeignKey("batches.id"))  # 关联批次
+    file_id = Column(Integer, ForeignKey("cleaned_files_2.id"))  # 关联二次清洗文件
+    keyword_set_id = Column(Integer, ForeignKey("keyword_sets.id"))  # 关联关键词组
+    match_data = Column(String)  # 存储JSON格式的匹配结果
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # 关联关系
+    batch = relationship("Batch")
+    file = relationship("CleanedFile2")
+    keyword_set = relationship("KeywordSet")
