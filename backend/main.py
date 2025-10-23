@@ -145,6 +145,5 @@ static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # 挂载前端文件
-frontend_dir = os.path.join(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))), "templates")
+frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="templates")
