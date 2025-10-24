@@ -3,3 +3,4 @@ venv
 .DS_Store
 backend/static/uploads/*
 *.egg-info
+scripts/

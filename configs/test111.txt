@@ -1,0 +1,444 @@
+# Router Log File - Generated for Testing
+# Device: Cisco IOS Router (Model: CSR1000v)
+# Firmware: IOS-XE 17.3.2
+# Logging started at: 2025-07-01 00:00:00 UTC
+
+--= Session 1 =--
+2025-07-01 08:15:32 UTC: %SYS-5-LOGGINGHOST_STARTSTOP: Logging to host 192.168.1.100 started - CLI initiated
+2025-07-01 08:15:35 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 08:15:35 UTC Wed Jul 1 2025
+<Router>
+User: admin
+Password: ********
+<Router>
+2025-07-01 08:15:40 UTC: %SYS-5-CONFIG_I: Configured from console by admin on vty0 (192.168.1.50)
+<Router>show version
+Cisco IOS XE Software, Version 17.03.02
+Cisco IOS Software [Amsterdam], CSR1000V Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 17.3.2, RELEASE SOFTWARE (fc4)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2021 by Cisco Systems, Inc.
+Compiled Wed 24-Mar-21 17:52 by mcpre
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>interface GigabitEthernet1
+<Router(config-if)>ip address 192.168.1.1 255.255.255.0
+2025-07-01 08:16:15 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet1, changed state to up
+<Router(config-if)>no shutdown
+<Router(config-if)>exit
+<Router(config)>interface GigabitEthernet2
+<Router(config-if)>ip address 10.0.0.1 255.255.255.0
+<Router(config-if)>no shutdown
+2025-07-01 08:16:30 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet2, changed state to up
+<Router(config-if)>exit
+<Router(config)>router ospf 1
+<Router(config-router)>network 192.168.1.0 0.0.0.255 area 0
+<Router(config-router)>network 10.0.0.0 0.0.0.255 area 0
+<Router(config-router)>exit
+<Router(config)>access-list 101 permit tcp any host 192.168.1.10 eq 80
+<Router(config)>access-list 101 deny ip any any
+<Router(config)>interface GigabitEthernet1
+<Router(config-if)>ip access-group 101 in
+<Router(config-if)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 08:18:45 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 08:18:45 UTC Wed Jul 1 2025
+
+--= Session 2 =--
+2025-07-01 09:05:12 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 09:05:12 UTC Wed Jul 1 2025
+<Router>
+User: technician1
+Password: ********
+<Router>
+<Router>show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+GigabitEthernet1       192.168.1.1     YES manual up                    up
+GigabitEthernet2       10.0.0.1        YES manual up                    up
+GigabitEthernet3       unassigned      YES unset  administratively down down
+GigabitEthernet4       unassigned      YES unset  administratively down down
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>interface GigabitEthernet3
+<Router(config-if)>ip address 172.16.0.1 255.255.255.0
+<Router(config-if)>no shutdown
+2025-07-01 09:06:30 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet3, changed state to up
+<Router(config-if)>exit
+<Router(config)>router ospf 1
+<Router(config-router)>network 172.16.0.0 0.0.0.255 area 1
+<Router(config-router)>exit
+<Router(config)>access-list 102 permit udp any any eq 53
+<Router(config)>access-list 102 deny ip any any
+<Router(config)>interface GigabitEthernet3
+<Router(config-if)>ip access-group 102 in
+<Router(config-if)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 09:08:22 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 09:08:22 UTC Wed Jul 1 2025
+
+--= Session 3 =--
+2025-07-01 10:12:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 10:12:45 UTC Wed Jul 1 2025
+<Router>
+User: intern
+Password: ********
+<Router>
+<Router>show running-config
+Building configuration...
+
+Current configuration : 2032 bytes
+!
+version 17.3
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname Router
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$xyz$abc123xyz456ABC789
+!
+username admin privilege 15 secret 5 $1$xyz$abc123xyz456ABC789
+username technician1 privilege 15 secret 5 $1$xyz$abc123xyz456ABC789
+username intern privilege 10 secret 5 $1$xyz$abc123xyz456ABC789
+!
+interface GigabitEthernet1
+ ip address 192.168.1.1 255.255.255.0
+ ip access-group 101 in
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet2
+ ip address 10.0.0.1 255.255.255.0
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet3
+ ip address 172.16.0.1 255.255.255.0
+ ip access-group 102 in
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet4
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+router ospf 1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 10.0.0.0 0.0.0.255 area 0
+ network 172.16.0.0 0.0.0.255 area 1
+!
+access-list 101 permit tcp any host 192.168.1.10 eq 80
+access-list 101 deny ip any any
+access-list 102 permit udp any any eq 53
+access-list 102 deny ip any any
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input ssh
+!
+end
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>interface GigabitEthernet4
+<Router(config-if)>ip address 192.168.2.1 255.255.255.0
+<Router(config-if)>no shutdown
+2025-07-01 10:14:10 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet4, changed state to up
+<Router(config-if)>exit
+<Router(config)>router ospf 1
+<Router(config-router)>network 192.168.2.0 0.0.0.255 area 2
+<Router(config-router)>exit
+<Router(config)>access-list 103 permit icmp any any echo-reply
+<Router(config)>access-list 103 deny ip any any
+<Router(config)>interface GigabitEthernet4
+<Router(config-if)>ip access-group 103 in
+<Router(config-if)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 10:16:35 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 10:16:35 UTC Wed Jul 1 2025
+
+--= Session 4 =--
+2025-07-01 11:05:22 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 11:05:22 UTC Wed Jul 1 2025
+<Router>
+User: admin
+Password: ********
+<Router>
+<Router>show ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route, H - NHRP, l - LISP
+       + - replicated route, % - next hop override
+
+Gateway of last resort is not set
+
+      10.0.0.0/24 is subnetted, 1 subnets
+O        10.0.0.0 [110/2] via 10.0.0.1, 00:02:15, GigabitEthernet2
+      172.16.0.0/24 is subnetted, 1 subnets
+O IA     172.16.0.0 [110/2] via 172.16.0.1, 00:02:15, GigabitEthernet3
+      192.168.1.0/24 is subnetted, 1 subnets
+O        192.168.1.0 [110/2] via 192.168.1.1, 00:02:15, GigabitEthernet1
+      192.168.2.0/24 is subnetted, 1 subnets
+O IA     192.168.2.0 [110/2] via 192.168.2.1, 00:02:15, GigabitEthernet4
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>access-list 101 permit tcp any host 192.168.1.10 eq 443
+<Router(config)>access-list 101 permit tcp any host 192.168.1.10 eq 80
+<Router(config)>access-list 101 deny ip any any
+<Router(config)>interface GigabitEthernet1
+<Router(config-if)>ip access-group 101 in
+<Router(config-if)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 11:08:45 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 11:08:45 UTC Wed Jul 1 2025
+
+--= Session 5 =--
+2025-07-01 14:30:15 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: technician2] [Source: 192.168.1.53] [localport: 22] at 14:30:15 UTC Wed Jul 1 2025
+<Router>
+User: technician2
+Password: ********
+<Router>
+<Router>show access-lists
+Extended IP access list 101
+    10 permit tcp any host 192.168.1.10 eq www
+    20 permit tcp any host 192.168.1.10 eq 443
+    30 deny ip any any
+Extended IP access list 102
+    10 permit udp any any eq domain
+    20 deny ip any any
+Extended IP access list 103
+    10 permit icmp any any echo-reply
+    20 deny ip any any
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>access-list 102 permit udp any any eq 123
+<Router(config)>access-list 102 permit udp any any eq domain
+<Router(config)>access-list 102 deny ip any any
+<Router(config)>interface GigabitEthernet3
+<Router(config-if)>ip access-group 102 in
+<Router(config-if)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 14:32:55 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: technician2] [Source: 192.168.1.53] [localport: 22] at 14:32:55 UTC Wed Jul 1 2025
+
+--= Session 6 =--
+2025-07-01 15:45:30 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: guest] [Source: 192.168.1.60] [localport: 22] at 15:45:30 UTC Wed Jul 1 2025
+% Invalid password
+<Router>
+User: guest
+Password: ********
+<Router>
+% Invalid password
+<Router>
+User: guest
+Password: ********
+<Router>
+2025-07-01 15:46:10 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: guest] [Source: 192.168.1.60] [localport: 22] at 15:46:10 UTC Wed Jul 1 2025
+% Maximum failed login attempts reached. Connection closed.
+
+--= Session 7 =--
+2025-07-01 16:20:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 16:20:45 UTC Wed Jul 1 2025
+<Router>
+User: admin
+Password: ********
+<Router>
+<Router>show logging
+Syslog logging: enabled (0 messages dropped, 0 flushes, 0 overruns)
+    Console logging: level debugging, 23 messages logged
+    Monitor logging: level debugging, 0 messages logged
+    Buffer logging: level debugging, 23 messages logged
+    Logging Exception size (4096 bytes)
+    Count and timestamp logging messages: disabled
+    File logging: disabled
+
+No active filter modules.
+
+    Trap logging: level informational, 22 message lines logged
+
+Log Buffer (4096 bytes):
+2025-07-01 08:15:32 UTC: %SYS-5-LOGGINGHOST_STARTSTOP: Logging to host 192.168.1.100 started - CLI initiated
+2025-07-01 08:15:35 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 08:15:35 UTC Wed Jul 1 2025
+2025-07-01 08:15:40 UTC: %SYS-5-CONFIG_I: Configured from console by admin on vty0 (192.168.1.50)
+2025-07-01 08:16:15 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet1, changed state to up
+2025-07-01 08:16:30 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet2, changed state to up
+2025-07-01 08:18:45 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 08:18:45 UTC Wed Jul 1 2025
+2025-07-01 09:05:12 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 09:05:12 UTC Wed Jul 1 2025
+2025-07-01 09:06:30 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet3, changed state to up
+2025-07-01 09:08:22 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 09:08:22 UTC Wed Jul 1 2025
+2025-07-01 10:12:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 10:12:45 UTC Wed Jul 1 2025
+2025-07-01 10:14:10 UTC: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet4, changed state to up
+2025-07-01 10:16:35 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 10:16:35 UTC Wed Jul 1 2025
+2025-07-01 11:05:22 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 11:05:22 UTC Wed Jul 1 2025
+2025-07-01 11:08:45 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 11:08:45 UTC Wed Jul 1 2025
+2025-07-01 14:30:15 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: technician2] [Source: 192.168.1.53] [localport: 22] at 14:30:15 UTC Wed Jul 1 2025
+2025-07-01 14:32:55 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: technician2] [Source: 192.168.1.53] [localport: 22] at 14:32:55 UTC Wed Jul 1 2025
+2025-07-01 15:45:30 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: guest] [Source: 192.168.1.60] [localport: 22] at 15:45:30 UTC Wed Jul 1 2025
+2025-07-01 15:46:10 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: guest] [Source: 192.168.1.60] [localport: 22] at 15:46:10 UTC Wed Jul 1 2025
+2025-07-01 16:20:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 16:20:45 UTC Wed Jul 1 2025
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>interface Loopback0
+<Router(config-if)>ip address 10.10.10.10 255.255.255.255
+<Router(config-if)>exit
+<Router(config)>router ospf 1
+<Router(config-router)>network 10.10.10.10 0.0.0.0 area 0
+<Router(config-router)>exit
+<Router(config)>exit
+<Router>write memory
+Building configuration...
+[OK]
+<Router>exit
+2025-07-01 16:23:10 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 16:23:10 UTC Wed Jul 1 2025
+
+--= Session 8 =--
+2025-07-01 17:15:22 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 17:15:22 UTC Wed Jul 1 2025
+<Router>
+User: technician1
+Password: ********
+<Router>
+<Router>show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+GigabitEthernet1       192.168.1.1     YES manual up                    up
+GigabitEthernet2       10.0.0.1        YES manual up                    up
+GigabitEthernet3       172.16.0.1      YES manual up                    up
+GigabitEthernet4       192.168.2.1     YES manual up                    up
+Loopback0              10.10.10.10     YES manual up                    up
+<Router>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+<Router(config)>hostname CoreRouter
+CoreRouter(config)>exit
+CoreRouter>write memory
+Building configuration...
+[OK]
+CoreRouter>exit
+2025-07-01 17:17:35 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: technician1] [Source: 192.168.1.51] [localport: 22] at 17:17:35 UTC Wed Jul 1 2025
+
+--= Session 9 =--
+2025-07-01 18:05:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 18:05:45 UTC Wed Jul 1 2025
+CoreRouter>
+User: admin
+Password: ********
+CoreRouter>
+CoreRouter>show running-config | include hostname
+hostname CoreRouter
+CoreRouter>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+CoreRouter(config)>interface GigabitEthernet1
+CoreRouter(config-if)>description LAN Interface
+CoreRouter(config-if)>exit
+CoreRouter(config)>interface GigabitEthernet2
+CoreRouter(config-if)>description WAN Interface
+CoreRouter(config-if)>exit
+CoreRouter(config)>exit
+CoreRouter>write memory
+Building configuration...
+[OK]
+CoreRouter>exit
+2025-07-01 18:08:20 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 18:08:20 UTC Wed Jul 1 2025
+
+--= Session 10 =--
+2025-07-01 19:30:10 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 19:30:10 UTC Wed Jul 1 2025
+CoreRouter>
+User: intern
+Password: ********
+CoreRouter>
+CoreRouter>show ip ospf neighbor
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.10.10.10       1   FULL/DR         00:00:36    192.168.1.1     GigabitEthernet1
+10.10.10.10       1   FULL/DR         00:00:33    10.0.0.1        GigabitEthernet2
+10.10.10.10       1   FULL/DR         00:00:38    172.16.0.1      GigabitEthernet3
+10.10.10.10       1   FULL/DR         00:00:37    192.168.2.1     GigabitEthernet4
+CoreRouter>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+CoreRouter(config)>access-list 104 permit tcp any any eq 22
+CoreRouter(config)>access-list 104 deny ip any any
+CoreRouter(config)>line vty 0 4
+CoreRouter(config-line)>access-class 104 in
+CoreRouter(config-line)>exit
+CoreRouter(config)>exit
+CoreRouter>write memory
+Building configuration...
+[OK]
+CoreRouter>exit
+2025-07-01 19:32:45 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: intern] [Source: 192.168.1.52] [localport: 22] at 19:32:45 UTC Wed Jul 1 2025
+
+--= Session 11 =--
+2025-07-01 20:15:30 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: hacker] [Source: 192.168.1.70] [localport: 22] at 20:15:30 UTC Wed Jul 1 2025
+% Invalid password
+CoreRouter>
+User: hacker
+Password: ********
+CoreRouter>
+% Invalid password
+CoreRouter>
+User: hacker
+Password: ********
+CoreRouter>
+2025-07-01 20:16:10 UTC: %SEC_LOGIN-5-LOGIN_FAILURE: Login Failure [user: hacker] [Source: 192.168.1.70] [localport: 22] at 20:16:10 UTC Wed Jul 1 2025
+% Maximum failed login attempts reached. Connection closed.
+
+--= Session 12 =--
+2025-07-01 21:05:45 UTC: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 21:05:45 UTC Wed Jul 1 2025
+CoreRouter>
+User: admin
+Password: ********
+CoreRouter>
+CoreRouter>show ip access-lists
+Extended IP access list 101
+    10 permit tcp any host 192.168.1.10 eq www
+    20 permit tcp any host 192.168.1.10 eq 443
+    30 deny ip any any
+Extended IP access list 102
+    10 permit udp any any eq ntp
+    20 permit udp any any eq domain
+    30 deny ip any any
+Extended IP access list 103
+    10 permit icmp any any echo-reply
+    20 deny ip any any
+Extended IP access list 104
+    10 permit tcp any any eq 22
+    20 deny ip any any
+CoreRouter>configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+CoreRouter(config)>no access-list 104
+CoreRouter(config)>access-list 104 permit tcp 192.168.1.0 0.0.0.255 any eq 22
+CoreRouter(config)>access-list 104 deny ip any any
+CoreRouter(config)>line vty 0 4
+CoreRouter(config-line)>access-class 104 in
+CoreRouter(config-line)>exit
+CoreRouter(config)>exit
+CoreRouter>write memory
+Building configuration...
+[OK]
+CoreRouter>exit
+2025-07-01 21:08:30 UTC: %SEC_LOGIN-5-LOGOUT_SUCCESS: Logout Success [user: admin] [Source: 192.168.1.50] [localport: 22] at 21:08:30 UTC Wed Jul 1 2025
+
+# Logging stopped at: 2025-07-01 23:59:59 UTC
+# Total sessions: 12
+# Successful logins: 10
+# Failed logins: 2
+# Configuration changes: 15
