@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .. import crud, schemas, models
 from .clean_1 import clean_multiple_configs
 from .clean_2 import parse_config_file  # 导入二次清洗函数
+from .keyword_service import perform_keyword_check
 
 # 确保上传目录存在
 UPLOAD_BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../static/uploads")
@@ -26,7 +27,7 @@ async def process_uploaded_files(files: list[UploadFile], description: str, db: 
     os.makedirs(cleaned1_dir, exist_ok=True)
 
     original_file_paths = []
-
+    batch_id = batch.id
     # 保存原始文件
     for file in files:
         file_path = os.path.join(original_dir, file.filename)
@@ -37,7 +38,7 @@ async def process_uploaded_files(files: list[UploadFile], description: str, db: 
         crud.create_original_file(db, schemas.OriginalFileCreate(
             filename=file.filename,
             file_path=file_path,
-            batch_id=batch.id
+            batch_id=batch_id
         ))
 
         original_file_paths.append(file_path)
@@ -71,6 +72,28 @@ async def process_uploaded_files(files: list[UploadFile], description: str, db: 
                 batch_id=batch.id
             ))
 
+    # 步骤2：执行二次清洗，
+    perform_second_cleaning(batch_id, db)
+
+    # 步骤3: 执行关键词检测
+
+
+    # 获取默认关键词组（或让用户提前选择，这里简化为取ID=1的组）
+    # default_keyword_set = crud.get_default_keyword_set(db)  # 需实现：获取默认关键词组
+    # if not default_keyword_set:
+    #     raise ValueError("无可用关键词组，请先创建关键词组")
+    # import pdb;pdb.set_trace()
+    # 执行关键词检测（基于clean_1的结果）
+    keyword_results = perform_keyword_check(
+        db=db,
+        batch_id=batch_id,
+        # 传入clean_1文件的ID列表（替代原clean_2的file_ids）
+        # file_ids=[f.id for f in original_file_paths],
+        keyword_set_id=1
+    )
+
+    # 更新批次状态为“已完成”
+    crud.update_batch_status(db, batch_id=batch_id, status="completed")
     return batch
 
 def perform_second_cleaning(batch_id: int, db: Session):
@@ -83,7 +106,9 @@ def perform_second_cleaning(batch_id: int, db: Session):
     batch = crud.get_batch(db, batch_id)
     batch_dir = os.path.dirname(os.path.dirname(cleaned1_files[0].file_path))
     cleaned2_dir = os.path.join(batch_dir, "cleaned_2")
+    match_dir = os.path.join(batch_dir, "match")
     os.makedirs(cleaned2_dir, exist_ok=True)
+    os.makedirs(match_dir, exist_ok=True)
 
     # 执行二次清洗（使用新提供的代码）
     for file in cleaned1_files:

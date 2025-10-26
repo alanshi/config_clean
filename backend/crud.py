@@ -126,6 +126,8 @@ def create_keyword_match_result(db: Session, result: schemas.KeywordMatchResultC
         db_result = models.KeywordMatchResult(
             batch_id=result.batch_id,
             file_id=result.file_id,
+            filename=result.filename,
+            file_path=result.file_path,
             keyword_set_id=result.keyword_set_id,
             match_data=match_data_str  # 数据库字段为字符串类型
         )
@@ -171,3 +173,15 @@ def get_match_results_by_batch(db: Session, batch_id: int):
 
 def get_cleaned_file_2(db: Session, file_id: int):
     return db.query(models.CleanedFile2).filter(models.CleanedFile2.id == file_id).first()
+
+def update_batch_status(db: Session, batch_id: int, status: str):
+    """更新批次状态"""
+    db.query(models.Batch).filter(models.Batch.id == batch_id).update({"status": status})
+    db.commit()
+
+
+def get_match_result_by_id(db: Session, match_id: int):
+    """查询匹配结果详情（通过ID）"""
+    return db.query(models.KeywordMatchResult).filter(
+        models.KeywordMatchResult.id == match_id
+    ).first()

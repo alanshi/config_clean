@@ -57,11 +57,15 @@ class CleanedFile2(FileBase):
     class Config:
         orm_mode = True
 
-class BatchWithFiles(Batch):
+class BatchResponse(Batch):
     original_files: List[OriginalFile] = []
     cleaned_files_1: List[CleanedFile1] = []
     cleaned_files_2: List[CleanedFile2] = []
+    keyword_matches: List[dict] = []
 
+
+class BatchWithFiles(BatchResponse):
+    pass
 
 # 关键词组模型
 class KeywordSetBase(BaseModel):
@@ -90,6 +94,8 @@ class KeywordMatchResultBase(BaseModel):
     file_id: int
     keyword_set_id: int
     match_data: dict
+    filename: str
+    file_path: str
     # 新增：自定义验证器，自动将JSON字符串转为字典
     @field_validator('match_data', mode='before')
     def parse_match_data(cls, v):

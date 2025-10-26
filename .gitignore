@@ -4,3 +4,4 @@ venv
 backend/static/uploads/*
 *.egg-info
 scripts/
+*.db

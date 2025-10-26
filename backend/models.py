@@ -13,6 +13,7 @@ class Batch(Base):
     original_files = relationship("OriginalFile", back_populates="batch")
     cleaned_files_1 = relationship("CleanedFile1", back_populates="batch")
     cleaned_files_2 = relationship("CleanedFile2", back_populates="batch")
+    status = Column(String, default="processing")
 
 class OriginalFile(Base):
     __tablename__ = "original_files"
@@ -65,6 +66,8 @@ class KeywordMatchResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     batch_id = Column(Integer, ForeignKey("batches.id"))  # 关联批次
     file_id = Column(Integer, ForeignKey("cleaned_files_2.id"))  # 关联二次清洗文件
+    filename = Column(String, index=True)
+    file_path = Column(String)
     keyword_set_id = Column(Integer, ForeignKey("keyword_sets.id"))  # 关联关键词组
     match_data = Column(String)  # 存储JSON格式的匹配结果
     created_at = Column(DateTime, default=datetime.utcnow)

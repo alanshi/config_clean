@@ -89,3 +89,10 @@ def get_batch_matches(batch_id: int, db: Session = Depends(get_db)):
             res.match_data = {"error": "查询接口解析失败"}
 
     return results
+
+@router.get("/match/match_id/{match_id}", response_model=schemas.KeywordMatchResult)
+def get_match_result(match_id: int, db: Session = Depends(get_db)):
+    result = crud.get_match_result_by_id(db, match_id=match_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="匹配结果不存在")
+    return result

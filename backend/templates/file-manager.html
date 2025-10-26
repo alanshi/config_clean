@@ -36,9 +36,6 @@
                 </button>
             </div>
 
-            <!-- <div id="loadingIndicator" class="flex justify-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div> -->
             <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
                 <!-- 错误信息将通过JavaScript动态填充 -->
             </div>
@@ -46,8 +43,6 @@
                 <i class="fa fa-folder-open text-5xl mb-4"></i>
                 <p>暂无文件批次，请先上传文件</p>
             </div>
-
-
 
             <div id="batchesList" class="hidden space-y-6">
                 <!-- 批次列表将通过JavaScript动态生成 -->
@@ -75,6 +70,26 @@
         </div>
     </div>
 
+    <!-- 关键词匹配结果模态框 -->
+    <div id="keywordResultModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="resultModalTitle" class="text-lg font-semibold text-gray-800">关键词匹配详情</h3>
+                <button id="closeResultModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 flex-grow overflow-auto" id="keywordResultContent">
+                <!-- 结果内容将动态填充 -->
+            </div>
+            <div class="p-4 border-t flex justify-end">
+                <button id="closeResultModalBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-gray-800 text-white mt-12">
         <div class="container mx-auto px-4 py-6">
             <p class="text-center text-gray-400">配置文件预处理系统 &copy; 2025</p>
@@ -82,5 +97,589 @@
     </footer>
 
     <script src="/static/js/file-manager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 页面元素
+            const batchesList = document.getElementById('batchesList');
+            const noBatches = document.getElementById('noBatches');
+            const errorMessage = document.getElementById('errorMessage');
+            const fileContentModal = document.getElementById('fileContentModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const fileContent = document.getElementById('fileContent');
+            const closeModal = document.getElementById('closeModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const keywordResultModal = document.getElementById('keywordResultModal');
+            const resultModalTitle = document.getElementById('resultModalTitle');
+            const keywordResultContent = document.getElementById('keywordResultContent');
+            const closeResultModal = document.getElementById('closeResultModal');
+            const closeResultModalBtn = document.getElementById('closeResultModalBtn');
+
+            // 页面加载时加载批次数据
+            loadBatches();
+
+            // 刷新按钮事件
+            document.getElementById('refreshBatches').addEventListener('click', loadBatches);
+
+            // 加载所有批次
+            async function loadBatches() {
+                try {
+                    const response = await fetch('/api/batches/');
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    const batches = await response.json();
+                    displayBatches(batches);
+                } catch (error) {
+                    console.error('加载批次错误:', error);
+                    showError(`加载批次失败: ${error.message}`);
+                }
+            }
+
+            // 显示批次列表（核心修改：表格化展示文件）
+            function displayBatches(batches) {
+                batchesList.innerHTML = '';
+                hideError();
+
+                if (!Array.isArray(batches)) {
+                    showError('获取的批次数据格式错误');
+                    return;
+                }
+
+                if (batches.length === 0) {
+                    noBatches.classList.remove('hidden');
+                    batchesList.classList.add('hidden');
+                    return;
+                }
+
+                noBatches.classList.add('hidden');
+                batchesList.classList.remove('hidden');
+
+                // 按批次ID降序排序（最新在前）
+                batches.sort((a, b) => b.id - a.id);
+
+                batches.forEach(batch => {
+                    // 数据初始化（防止undefined）
+                    batch.original_files = batch.original_files || [];
+                    batch.cleaned_files_1 = batch.cleaned_files_1 || [];
+                    batch.cleaned_files_2 = batch.cleaned_files_2 || [];
+                    batch.keyword_matches = batch.keyword_matches || []; // 假设批次接口返回关键词结果
+                    batch.id = batch.id || Date.now();
+                    batch.timestamp = batch.timestamp || new Date().toISOString();
+
+                    const batchElement = createBatchElement(batch);
+                    batchesList.appendChild(batchElement);
+                });
+            }
+
+            // 创建单个批次的DOM元素（核心：表格化文件列表）
+            function createBatchElement(batch) {
+                const batchDiv = document.createElement('div');
+                batchDiv.className = 'border rounded-lg mb-6 overflow-hidden';
+                batchDiv.dataset.batchId = batch.id;
+
+                // 格式化日期
+                const formattedDate = new Date(batch.timestamp).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                // 批次头部
+                batchDiv.innerHTML = `
+                    <div class="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium text-gray-900">批次 #${batch.id}</h3>
+                            <p class="text-sm text-gray-500">创建时间: ${formattedDate}</p>
+                            ${batch.description ? `<p class="text-sm text-gray-600 mt-1">描述: ${batch.description}</p>` : ''}
+                        </div>
+                        <button class="viewBatchDetails px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                                data-batch-id="${batch.id}">
+                            查看文件列表
+                        </button>
+                    </div>
+                    <!-- 文件表格（默认隐藏） -->
+                    <div class="batchDetails hidden p-4 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        1. 原始文件
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        2. 初次清洗
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        3. 二次清洗
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        4. 关键词检测
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        5. 重新清洗
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        6. 清洗状态
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="fileTableBody-${batch.id}">
+                                <!-- 表格内容动态生成 -->
+                            </tbody>
+                        </table>
+                        <!-- 批次级关键词检测按钮（可选） -->
+                        ${batch.original_files.length > 0 ? `
+                            <div class="mt-4">
+                                <button class="performBatchKeywordCheck px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+                                        data-batch-id="${batch.id}">
+                                    <i class="fa fa-search mr-1"></i> 批次级关键词检测
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                // 获取表格 tbody 并填充文件行
+                const tableBody = batchDiv.querySelector(`#fileTableBody-${batch.id}`);
+                fillFileTable(batch, tableBody);
+
+                // 查看详情（展开/折叠表格）
+                batchDiv.querySelector('.viewBatchDetails').addEventListener('click', function () {
+                    const detailsDiv = batchDiv.querySelector('.batchDetails');
+                    detailsDiv.classList.toggle('hidden');
+                });
+
+                // 批次级关键词检测
+                const batchKeywordBtn = batchDiv.querySelector('.performBatchKeywordCheck');
+                if (batchKeywordBtn) {
+                    batchKeywordBtn.addEventListener('click', async () => {
+                        await performKeywordCheck(batch.id, batchDiv);
+                    });
+                }
+
+                return batchDiv;
+            }
+
+            // 填充文件表格（每一行对应一个原始文件的全流程状态）
+            function fillFileTable(batch, tableBody) {
+                const { original_files, cleaned_files_1, cleaned_files_2, keyword_matches } = batch;
+
+                // 遍历原始文件，生成表格行
+                original_files.forEach(originalFile => {
+                    // 关联对应文件：通过原始file_id匹配后续清洗文件
+                    const cleaned1File = cleaned_files_1.find(f => f.batch_id === originalFile.batch_id) || null;
+                    const cleaned2File = cleaned_files_2.find(f => f.batch_id === originalFile.batch_id) || null;
+                    const keywordMatch = keyword_matches.find(f => f.batch_id === originalFile.batch_id) || null;
+
+                    // 生成表格行
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.dataset.originalFileId = originalFile.id;
+                    row.dataset.batchId = batch.id;
+
+                    // 状态判断逻辑-remove this logic
+                    const getFileStatus = () => {
+                        if (keywordMatch) return '已完成';
+                        if (cleaned1File) return '待检测';
+                        return '待清洗';
+                    };
+
+                    // 行内容（6列）
+                    row.innerHTML = `
+                        <!-- 1. 原始文件 -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${originalFile.filename}</div>
+                            <button class="mt-1 text-blue-600 hover:text-blue-800 text-xs viewFile"
+                                    data-file-id="${originalFile.id}"
+                                    data-file-type="original"
+                                    data-file-name="${originalFile.filename}">
+                                <i class="fa fa-eye mr-1"></i> 查看内容
+                            </button>
+                        </td>
+                        <!-- 2. 初次清洗 -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${cleaned1File ? `
+                                <div class="text-sm text-gray-900">${cleaned1File.filename}</div>
+                                <button class="mt-1 text-blue-600 hover:text-blue-800 text-xs viewFile"
+                                        data-file-id="${cleaned1File.id}"
+                                        data-file-type="cleaned1"
+                                        data-file-name="${cleaned1File.filename}">
+                                    <i class="fa fa-eye mr-1"></i> 查看内容
+                                </button>
+                            ` : `
+                                <div class="text-sm text-gray-500">未生成</div>
+                            `}
+                        </td>
+                        <!-- 3. 二次清洗（按需求跳过，显示状态） -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${cleaned2File ? `
+                                <div class="text-sm text-gray-900">${cleaned2File.filename}</div>
+                                <button class="mt-1 text-blue-600 hover:text-blue-800 text-xs viewFile"
+                                        data-file-id="${cleaned2File.id}"
+                                        data-file-type="cleaned2"
+                                        data-file-name="${cleaned2File.filename}">
+                                    <i class="fa fa-eye mr-1"></i> 查看内容
+                                </button>
+                            ` : `
+                                <div class="text-sm text-gray-500">已跳过</div>
+                            `}
+                        </td>
+                        <!-- 4. 关键词检测 -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${keywordMatch ? `
+                                <div class="text-sm text-gray-900">${keywordMatch.filename}</div>
+                                <button class="text-purple-600 hover:text-purple-800 text-xs viewKeywordResult"
+                                        data-batch-id="${batch.id}"
+                                        data-file-id="${originalFile.id}"
+                                        data-match-id="${keywordMatch.id}"
+                                        data-file-name="${keywordMatch.filename}">
+                                    <i class="fa fa-list mr-1"></i> 查看结果
+                                </button>
+                            ` : `
+                                <div class="text-sm text-gray-500">未检测</div>
+                            `}
+                        </td>
+                        <!-- 5. 重新执行清洗 -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button disabledclass="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 reCleanFile"
+                                    data-batch-id="${batch.id}"
+                                    data-original-file-id="${originalFile.id}">
+                                <i class="fa fa-refresh mr-1"></i> 重新清洗
+                            </button>
+                        </td>
+                        <!-- 6. 清洗状态 -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                已完成
+                            </span>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // 查看文件内容（复用原有逻辑，适配新按钮）
+            async function viewFileContent(fileId, fileType, fileName) {
+                try {
+                    const response = await fetch(`/api/files/${fileType}/${fileId}/content`);
+                    if (!response.ok) {
+                        throw new Error('获取文件内容失败');
+                    }
+
+                    modalTitle.textContent = `文件内容: ${fileName}`;
+
+                    // JSON文件特殊格式化
+                    if (fileType.includes('cleaned') && fileName.endsWith('.json')) {
+                        try {
+                            const jsonData = await response.json();
+                            fileContent.innerHTML = `
+                                <style>
+                                    .json-key { color: #0066cc; font-weight: bold; }
+                                    .json-string { color: #008000; }
+                                    .json-number { color: #ff0000; }
+                                    .json-boolean { color: #aa00aa; }
+                                    .json-null { color: #888888; }
+                                </style>
+                                ${formatJson(jsonData)}
+                            `;
+                        } catch (e) {
+                            const content = await response.text();
+                            fileContent.textContent = content;
+                        }
+                    } else {
+                        const content = await response.text();
+                        fileContent.textContent = content;
+                    }
+
+                    fileContentModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } catch (error) {
+                    console.error('查看文件错误:', error);
+                    alert(`查看文件失败: ${error.message}`);
+                }
+            }
+
+            // 重新执行清洗（单个文件）
+            async function reCleanFile(batchId, originalFileId) {
+                if (!confirm('确定重新执行清洗吗？将覆盖原有清洗结果！')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/batches/${batchId}/reclean`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ original_file_id: originalFileId })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('重新清洗失败');
+                    }
+
+                    loadBatches();
+                    alert('重新清洗已触发，稍后刷新查看结果');
+                } catch (error) {
+                    console.error('重新清洗错误:', error);
+                    alert(`重新清洗失败: ${error.message}`);
+                }
+            }
+
+            // 执行关键词检查（批次级）
+            async function performKeywordCheck(batchId, batchElement) {
+                try {
+                    // 获取关键词组列表
+                    const keywordSetsResponse = await fetch('/api/keywords/sets/');
+                    if (!keywordSetsResponse.ok) {
+                        throw new Error('获取关键词组失败');
+                    }
+                    const keywordSets = await keywordSetsResponse.json();
+
+                    if (keywordSets.length === 0) {
+                        alert('没有可用的关键词组，请先创建关键词组');
+                        return;
+                    }
+
+                    // 关键词组选择弹窗
+                    const selectModal = createKeywordSetModal(keywordSets);
+                    document.body.appendChild(selectModal);
+
+                    // 弹窗事件绑定
+                    selectModal.querySelector('.cancelSelect').addEventListener('click', () => {
+                        document.body.removeChild(selectModal);
+                    });
+
+                    selectModal.querySelector('.confirmSelect').addEventListener('click', async () => {
+                        const keywordSetId = selectModal.querySelector('#keywordSetSelect').value;
+                        document.body.removeChild(selectModal);
+
+                        // 发送请求（body传参）
+                        const response = await fetch('/api/keywords/match/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                batch_id: parseInt(batchId),
+                                keyword_set_id: parseInt(keywordSetId)
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => null);
+                            const errorMsg = errorData?.detail || '关键词检测失败';
+                            throw new Error(errorMsg);
+                        }
+
+                        loadBatches();
+                        alert('批次级关键词检测已完成');
+                    });
+                } catch (error) {
+                    console.error('关键词检测错误:', error);
+                    alert(`关键词检测失败: ${error.message}`);
+                }
+            }
+
+            // 查看关键词匹配结果
+            async function viewKeywordResult(batchId, fileId, matchId) {
+                try {
+                    const response = await fetch(`/api/keywords/match/match_id/${matchId}`);
+                    if (!response.ok) {
+                        throw new Error('获取匹配结果失败');
+                    }
+                    const result = await response.json();
+
+                    // 获取关键词组信息
+                    const keywordSetResponse = await fetch(`api/keywords/sets/1`);
+                    const keywordSet = await keywordSetResponse.json();
+
+                    // 渲染结果内容
+                    keywordResultContent.innerHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800">${keywordSet.name}</h4>
+                            <p class="text-sm text-gray-500">
+                                检测时间: ${new Date(result.created_at).toLocaleString()} |
+                            </p>
+                        </div>
+                        ${renderMatchDetails(result.match_data.matches)}
+                    `;
+
+                    // 显示模态框
+                    resultModalTitle.textContent = `关键词结果: `;
+                    keywordResultModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } catch (error) {
+                    console.error('查看结果错误:', error);
+                    alert(`查看结果失败: ${error.message}`);
+                }
+            }
+
+            // 辅助：渲染匹配详情
+            function renderMatchDetails(matches) {
+                if (!matches || Object.keys(matches).length === 0) {
+                    return '<p class="text-sm text-gray-600">无匹配关键词</p>';
+                }
+
+                let html = '';
+                Object.entries(matches).forEach(([section, matchList]) => {
+                    html += `
+                        <div class="mb-3 p-3 bg-gray-50 rounded-md">
+                            <h5 class="font-medium text-gray-800 mb-2">${section}</h5>
+                            <ul class="space-y-2 text-sm">
+                                ${matchList.map(match => `
+                                    <li class="flex">
+                                        <span class="text-gray-500 w-16">行 ${match.line}:</span>
+                                        <span><strong class="text-purple-600">${match.keyword}</strong> - ${escapeHtml(match.content)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+                return html;
+            }
+
+            // 辅助：创建关键词组选择弹窗
+            function createKeywordSetModal(keywordSets) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                        <div class="p-4 border-b">
+                            <h3 class="text-lg font-semibold text-gray-800">选择关键词组</h3>
+                        </div>
+                        <div class="p-4">
+                            <p class="mb-3 text-sm text-gray-600">请选择用于检测的关键词组：</p>
+                            <select id="keywordSetSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                ${keywordSets.map(set => `
+                                    <option value="${set.id}">${set.name} (${set.keywords.length}个关键词)</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="p-4 border-t flex justify-end gap-2">
+                            <button class="cancelSelect px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                取消
+                            </button>
+                            <button class="confirmSelect px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                确认检测
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return modal;
+            }
+
+            // 辅助：JSON格式化（带高亮）
+            function formatJson(data, indent = 0) {
+                const spaces = '  '.repeat(indent);
+                if (typeof data === 'object' && data !== null) {
+                    const isArray = Array.isArray(data);
+                    let html = isArray ? '[' : '{';
+                    html += '<br>';
+
+                    const entries = isArray ? Array.from(data.entries()) : Object.entries(data);
+                    entries.forEach(([key, value], idx) => {
+                        const isLast = idx === entries.length - 1;
+                        const keyHtml = isArray ? '' : `<span class="json-key">"${escapeHtml(key)}": </span>`;
+                        html += `${spaces}  ${keyHtml}${formatJson(value, indent + 1)}${isLast ? '' : ','}<br>`;
+                    });
+
+                    html += `${spaces}${isArray ? ']' : '}'}`;
+                    return html;
+                } else if (typeof data === 'string') {
+                    return `<span class="json-string">"${escapeHtml(data)}"</span>`;
+                } else if (typeof data === 'number') {
+                    return `<span class="json-number">${data}</span>`;
+                } else if (typeof data === 'boolean') {
+                    return `<span class="json-boolean">${data}</span>`;
+                } else {
+                    return `<span class="json-null">null</span>`;
+                }
+            }
+
+            // 辅助：HTML转义（防XSS）
+            function escapeHtml(unsafe) {
+                if (!unsafe) return '';
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // 辅助：显示错误
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            }
+
+            // 辅助：隐藏错误
+            function hideError() {
+                errorMessage.classList.add('hidden');
+            }
+
+            // 事件委托：查看文件
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.viewFile');
+                if (btn) {
+                    viewFileContent(
+                        btn.dataset.fileId,
+                        btn.dataset.fileType,
+                        btn.dataset.fileName
+                    );
+                }
+            });
+
+            // 事件委托：重新清洗
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.reCleanFile');
+                if (btn) {
+                    reCleanFile(
+                        btn.dataset.batchId,
+                        btn.dataset.originalFileId
+                    );
+                }
+            });
+
+            // 事件委托：查看关键词结果
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.viewKeywordResult');
+                if (btn) {
+                    viewKeywordResult(
+                        btn.dataset.batchId,
+                        btn.dataset.fileId,
+                        btn.dataset.matchId
+                    );
+                }
+            });
+
+            // 关闭文件模态框
+            [closeModal, closeModalBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    fileContentModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // 关闭关键词结果模态框
+            [closeResultModal, closeResultModalBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    keywordResultModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // 点击模态框外部关闭
+            [fileContentModal, keywordResultModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
