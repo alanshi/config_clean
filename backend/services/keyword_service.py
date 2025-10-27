@@ -137,6 +137,46 @@ class ConfigKeywordMatcher:
         }
 
 
+def split_text_by_bytes_preserve_lines(text: str, max_bytes: int = 50*1024):
+    """
+    按字节长度切分文本，每组尽可能接近 max_bytes，
+    保留整行（不截断），包含换行符。
+    """
+    lines = text.splitlines(True)  # 保留换行符
+    chunks = []
+    current_chunk = ""
+    current_size = 0
+
+    for line in lines:
+        line_bytes = len(line.encode("utf-8"))
+        # 如果行比 max_bytes 还长，直接独立成块
+        if line_bytes >= max_bytes:
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+                current_size = 0
+            chunks.append(line)
+            continue
+
+        # 若加入当前块后超过 max_bytes
+        if current_size + line_bytes > max_bytes:
+            # 如果当前块非空 -> 结束当前块
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+                current_size = 0
+
+        # 加入行
+        current_chunk += line
+        current_size += line_bytes
+
+    # 收尾
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
+
+
 def perform_keyword_check(
     db: Session,
     batch_id: int,
@@ -144,6 +184,7 @@ def perform_keyword_check(
 ):
     """执行关键词检查，确保行号为原始文件行号"""
     # 1. 验证关键词组
+
     keyword_set = crud.get_keyword_set(db, keyword_set_id)
     if not keyword_set:
         raise ValueError("关键词组不存在")
@@ -195,3 +236,45 @@ def perform_keyword_check(
             continue
 
     return results
+
+def get_keyword_matche_segments(match_data: dict):
+
+    all_matches: List[Dict] = []
+    # 遍历所有配置区块（如hostname、mpls ldp、global等）
+    for section_name, section_matches in match_data["matches"].items():
+        # 遍历区块下的每个匹配项，补充"所属区块"信息
+        for match in section_matches:
+            # 校验单个匹配项的字段完整性
+            if not all(k in match for k in ["line", "keyword", "content"]):
+                print(f"警告：跳过无效匹配项（字段不完整）: {match}")
+                continue
+            # 补充"所属区块"，方便后续文件展示
+            all_matches.append({
+                "line": match["line"],          # 行号（排序依据）
+                "section": section_name,       # 所属配置区块
+                "keyword": match["keyword"],   # 匹配的关键词
+                "content": match["content"]    # 原始配置内容
+            })
+
+    if not all_matches:
+        raise ValueError("匹配结果中无有效数据，无法生成文件")
+
+    # 按"line"字段升序排序
+    sorted_matches = sorted(all_matches, key=lambda x: x["line"])
+
+    # 构建排序后的匹配项内容（按固定格式对齐）
+    match_lines = []
+    for idx, match in enumerate(sorted_matches, 1):
+        # 格式：行号 | 所属区块 | 关键词 | 配置内容（对齐显示，易读）
+        line = (
+            f"{match['content']}"
+        )
+        match_lines.append(line)
+
+    # 合并头部和匹配项，形成完整文件内容
+    file_content = "\n".join(match_lines)
+
+    # 每个片段最多50k字节，跨行不截断
+    # segments = split_text_by_bytes_preserve_lines(file_content, max_bytes=50*1024)
+    return file_content
+

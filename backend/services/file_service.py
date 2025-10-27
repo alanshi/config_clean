@@ -13,7 +13,7 @@ from .keyword_service import perform_keyword_check
 UPLOAD_BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../static/uploads")
 os.makedirs(UPLOAD_BASE_DIR, exist_ok=True)
 
-async def process_uploaded_files(files: list[UploadFile], description: str, db: Session):
+async def process_uploaded_files(files: list[UploadFile], description: str, db: Session, keyword_set_id: int):
     # 创建新批次
     batch = crud.create_batch(db, schemas.BatchCreate(description=description))
 
@@ -89,7 +89,7 @@ async def process_uploaded_files(files: list[UploadFile], description: str, db: 
         batch_id=batch_id,
         # 传入clean_1文件的ID列表（替代原clean_2的file_ids）
         # file_ids=[f.id for f in original_file_paths],
-        keyword_set_id=1
+        keyword_set_id=keyword_set_id
     )
 
     # 更新批次状态为“已完成”

@@ -5,3 +5,4 @@ backend/static/uploads/*
 *.egg-info
 scripts/
 *.db
+config_cleaner.db
